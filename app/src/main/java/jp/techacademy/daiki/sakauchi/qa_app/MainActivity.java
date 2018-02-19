@@ -30,10 +30,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private Toolbar mToolbar;
     private int mGenre = 0;
+    private boolean favoFlag = false;
+
+    // 追加
+    NavigationView mNavigationView;
 
     // --- ここから ---
     private DatabaseReference mDatabaseReference;
@@ -74,6 +78,10 @@ public class MainActivity extends AppCompatActivity {
             Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
             mQuestionArrayList.add(question);
             mAdapter.notifyDataSetChanged();
+
+            // この中でお気に入り受け取れる？
+            // HashMap favoMap = (HashMap) map.get("favorite");
+
         }
 
         @Override
@@ -126,12 +134,34 @@ public class MainActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+        // 追加 ---
+        // ログイン済みのユーザーを取得する
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+       // mNavigationView = (NavigationView) findViewById(R.id.main_navigation_view);
+        //mNavigationView.setNavigationItemSelectedListener();
+//        mNavigationView.setNavigationItemSelectedListener((NavigationView.OnNavigationItemSelectedListener)this);
+
+        // ログインしていなけれお気に入りを非表示に
+        if (user == null) {
+            //Menu menu = mNavigationView.getMenu();
+            mNavigationView = (NavigationView) findViewById(R.id.main_navigation_view);
+            mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(false);
+        }
+        // ログイン時はお気に入りを表示し、FavoriteActivityにインテントを投げる
+        else{
+            mNavigationView = (NavigationView) findViewById(R.id.main_navigation_view);
+            mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(true);
+        }
+        //  ---
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // ジャンルを選択していない場合（mGenre == 0）はエラーを表示するだけ
-                if (mGenre == 0) {
+                // favoFlagの条件追加
+                if (mGenre == 0 && favoFlag == false) {
                     Snackbar.make(view, "ジャンルを選択して下さい", Snackbar.LENGTH_LONG).show();
                     return;
                 }
@@ -168,15 +198,25 @@ public class MainActivity extends AppCompatActivity {
                 if (id == R.id.nav_hobby) {
                     mToolbar.setTitle("趣味");
                     mGenre = 1;
+                    favoFlag = false;
                 } else if (id == R.id.nav_life) {
                     mToolbar.setTitle("生活");
                     mGenre = 2;
+                    favoFlag = false;
                 } else if (id == R.id.nav_health) {
                     mToolbar.setTitle("健康");
                     mGenre = 3;
+                    favoFlag = false;
                 } else if (id == R.id.nav_compter) {
                     mToolbar.setTitle("コンピューター");
                     mGenre = 4;
+                    favoFlag = false;
+                }else if (id == R.id.nav_favorite) {
+                    mToolbar.setTitle("お気に入り");
+                    favoFlag = true;
+                    //mGenre = 100;
+                    //item.nav_favorite.setVisibility(View.INVISIBLE);
+                    //mToolbar.getVisibility();
                 }
 
                 DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -191,7 +231,53 @@ public class MainActivity extends AppCompatActivity {
                 if (mGenreRef != null) {
                     mGenreRef.removeEventListener(mEventListener);
                 }
-                mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+
+                // お気に入り表示時
+                if(favoFlag == true) {
+
+                    FirebaseAuth mAuth;
+                    // FirebaseAuthのオブジェクトを取得する
+                    mAuth = FirebaseAuth.getInstance();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    //mGenreRef = mDatabaseReference.child(Const.FavoritePATH).child(user.getUid());
+
+/*
+                    // 追加
+                    // mQuestionをお気に入り一覧から取ってくるよう初期化
+                    Question mQuestion;
+                    // お気に入り一覧に登録された質問を取ってくる
+                    mGenreRef = mDatabaseReference
+                            .child(Const.ContentsPATH)
+                            .child(mQuestion.getGenre())    // mQuestionArrayList.get(position).getGenre()
+                            .child(mQuestion.getQuestionUid());
+
+
+                    mGenreRef = mDatabaseReference
+                            .child(Const.ContentsPATH)
+                            .child(mQuestionArrayList.get(position).getGenre())
+                            .child(mQuestionArrayList.get(position).getQuestionUid());
+*/
+                    /*
+                    mGenreRef = mDatabaseReference
+                            .child(Const.ContentsPATH)
+                            .child(String.valueOf(mDatabaseReference.child(Const.FavoritePATH).child(user.getUid()).child(質問ID).child(ジャンル)))
+                            .child(String.valueOf(mDatabaseReference.child(Const.FavoritePATH).child(user.getUid()).child(質問ID)));
+                    */
+                    //mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(1));
+
+                    // FloatingButton非表示
+                    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                    fab.setVisibility(View.INVISIBLE);
+                }
+                // その他ジャンル表示時
+                else {
+                    mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+
+                    // FloatingButton表示
+                    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                    fab.setVisibility(View.VISIBLE);
+                }
+
                 mGenreRef.addChildEventListener(mEventListener);
                 return true;
             }
