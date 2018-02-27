@@ -5,11 +5,14 @@ android {
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "jp.techacademy.daiki.sakauchi.qa_app"
-        minSdkVersion 19
+        minSdkVersion 24
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // 追記 multiDex有効に
+        //multiDexEnabled true
     }
     buildTypes {
         release {
@@ -17,6 +20,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    //dexOptions{
+    // 追加 最大ヒープサイズを4Gに設定
+    //    javaMaxHeapSize "4g"
+    //}
 }
 
 dependencies {
@@ -31,6 +39,9 @@ dependencies {
 
     compile 'com.google.firebase:firebase-auth:11.0.4'
     compile 'com.google.firebase:firebase-database:11.0.4'
+
+    // 追記 support libを依存関係に含める
+    //compile 'com.android.support:multidex:1.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

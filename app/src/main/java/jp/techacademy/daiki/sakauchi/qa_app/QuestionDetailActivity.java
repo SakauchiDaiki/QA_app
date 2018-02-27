@@ -24,7 +24,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.Map;
 import java.util.HashMap;
 
+import static jp.techacademy.daiki.sakauchi.qa_app.MainActivity.favoriteMap;
+
 public class QuestionDetailActivity extends AppCompatActivity implements OnClickListener {
+//public class QuestionDetailActivity extends MainActivity implements OnClickListener {
 
     private ListView mListView;
     private Question mQuestion;
@@ -35,6 +38,7 @@ public class QuestionDetailActivity extends AppCompatActivity implements OnClick
     // 追加
     private ImageButton favoriteButton;
     private boolean favoriteFlag = false;
+    private HashMap mFavoriteQidMap;
 
     private ChildEventListener mFavoriteListener = new ChildEventListener(){
         @Override
@@ -199,13 +203,25 @@ public class QuestionDetailActivity extends AppCompatActivity implements OnClick
                 //HashMap answerMap = (HashMap) map.get("answers");
                 //data.put("answers", String.valueOf(mQuestion.getAnswers()));
 
+
+                // 追加
+                //mFavoriteQidMap.put(mQuestion.getQuestionUid(), mQuestion.getGenre());
+
                 // 質問のジャンルを保存したい
                 data.put("genre", String.valueOf(mQuestion.getGenre()));
-
                 favoRef.setValue(data);
 
                 favoriteButton.setImageResource(R.drawable.favorite);
                 favoriteFlag = !favoriteFlag;
+
+
+/*
+                Map<String, String> fMap = new HashMap<String, String>();
+                String genre = String.valueOf(mQuestion.getGenre());
+                fMap.put("genre", genre);
+                favoRef.setValue(fMap);
+*/
+                //favoriteMap.put(mQuestion.getQuestionUid(), String.valueOf(mQuestion.getGenre()));
 
             }
             // すでにお気に入りの時
@@ -215,8 +231,14 @@ public class QuestionDetailActivity extends AppCompatActivity implements OnClick
                 DatabaseReference favoRef = mDataBaseReference.child(Const.FavoritePATH).child(user.getUid()).child(mQuestion.getQuestionUid());
                 favoRef.setValue(null);
 
+                // 追加 APIレベル19→24？
+                //mFavoriteQidMap.remove(mQuestion.getQuestionUid(), mQuestion.getGenre());
+
                 favoriteButton.setImageResource(R.drawable.not_favorite);
                 favoriteFlag = !favoriteFlag;
+
+                //favoriteMap.remove(mQuestion.getQuestionUid());
+
             }
        // }
 

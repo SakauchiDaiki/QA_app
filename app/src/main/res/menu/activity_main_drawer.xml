@@ -2,7 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group
-        android:id="@+id/main_navigation_view"
         android:checkableBehavior="single">
         <item
             android:id="@+id/nav_hobby"
@@ -14,7 +13,7 @@
             android:id="@+id/nav_health"
             android:title="健康"/>
         <item
-            android:id="@+id/nav_compter"
+            android:id="@+id/nav_computer"
             android:title="コンピューター"/>
         <item
             android:id="@+id/nav_favorite"

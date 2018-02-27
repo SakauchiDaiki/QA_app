@@ -29,6 +29,8 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -36,15 +38,20 @@ public class MainActivity extends AppCompatActivity{
     private int mGenre = 0;
     private boolean favoFlag = false;
 
+    protected static List<String> mFavoriteArrayList;
+
     // 追加
     NavigationView mNavigationView;
 
     // --- ここから ---
     private DatabaseReference mDatabaseReference;
-    private DatabaseReference mGenreRef;
+    private DatabaseReference mGenreRef, mFavRef;
     private ListView mListView;
     private ArrayList<Question> mQuestionArrayList;
     private QuestionsListAdapter mAdapter;
+
+    // 追加 Qidとgenre
+    protected static Map<String, String> favoriteMap;
 
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
@@ -75,13 +82,39 @@ public class MainActivity extends AppCompatActivity{
                 }
             }
 
-            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
-            mQuestionArrayList.add(question);
-            mAdapter.notifyDataSetChanged();
+            // 追加
+            // お気に入り選択時
+            if(favoFlag == true) {
+                String work = dataSnapshot.getKey();
+                for(int i = 0; i< mFavoriteArrayList.size(); i++){
+                    // 今の質問がお気に入りに含まれていたら、お気に入り一覧に追加
+                    if(work == mFavoriteArrayList.get(i)){
+                        Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
+                        mQuestionArrayList.add(question);
+                    }
+                }
+            }
+            // お気に入り選択されていなければ、全て表示
+            else {
+                Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
+                mQuestionArrayList.add(question);       // リストに追加
+            }
+
+            mAdapter.notifyDataSetChanged();        // 表示
+
+            // ここの処理をmFavoriteListnerのonChildAddの中に書く。他のonhildChangedなどは空欄
+            /*
 
             // この中でお気に入り受け取れる？
             // HashMap favoMap = (HashMap) map.get("favorite");
 
+            // 追加
+            HashMap fMap = (HashMap) dataSnapshot.getValue();
+            String genre = (String) fMap.get("genre");
+
+            // dataSnapshot.getKey(): そのキーのID(= Qid)が入る？
+            favoriteMap.put(dataSnapshot.getKey(), genre);
+*/
         }
 
         @Override
@@ -134,6 +167,9 @@ public class MainActivity extends AppCompatActivity{
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
+        // 追加　お気に入りリスト用
+        mFavoriteArrayList = new ArrayList<String>();
+
         // 追加 ---
         // ログイン済みのユーザーを取得する
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -142,17 +178,19 @@ public class MainActivity extends AppCompatActivity{
         //mNavigationView.setNavigationItemSelectedListener();
 //        mNavigationView.setNavigationItemSelectedListener((NavigationView.OnNavigationItemSelectedListener)this);
 
+        /*
         // ログインしていなけれお気に入りを非表示に
         if (user == null) {
             //Menu menu = mNavigationView.getMenu();
-            mNavigationView = (NavigationView) findViewById(R.id.main_navigation_view);
+            mNavigationView = (NavigationView) findViewById(R.id.nav_view);
             mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(false);
         }
         // ログイン時はお気に入りを表示し、FavoriteActivityにインテントを投げる
         else{
-            mNavigationView = (NavigationView) findViewById(R.id.main_navigation_view);
+            mNavigationView = (NavigationView) findViewById(R.id.nav_view);
             mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(true);
         }
+        */
         //  ---
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -207,14 +245,13 @@ public class MainActivity extends AppCompatActivity{
                     mToolbar.setTitle("健康");
                     mGenre = 3;
                     favoFlag = false;
-                } else if (id == R.id.nav_compter) {
+                } else if (id == R.id.nav_computer) {
                     mToolbar.setTitle("コンピューター");
                     mGenre = 4;
                     favoFlag = false;
                 }else if (id == R.id.nav_favorite) {
-                    mToolbar.setTitle("お気に入り");
                     favoFlag = true;
-                    //mGenre = 100;
+                    mGenre = 100;
                     //item.nav_favorite.setVisibility(View.INVISIBLE);
                     //mToolbar.getVisibility();
                 }
@@ -234,6 +271,7 @@ public class MainActivity extends AppCompatActivity{
 
                 // お気に入り表示時
                 if(favoFlag == true) {
+                //if(mGenre == 100) {
 
                     FirebaseAuth mAuth;
                     // FirebaseAuthのオブジェクトを取得する
@@ -241,44 +279,30 @@ public class MainActivity extends AppCompatActivity{
                     FirebaseUser user = mAuth.getCurrentUser();
                     //mGenreRef = mDatabaseReference.child(Const.FavoritePATH).child(user.getUid());
 
-/*
-                    // 追加
-                    // mQuestionをお気に入り一覧から取ってくるよう初期化
-                    Question mQuestion;
-                    // お気に入り一覧に登録された質問を取ってくる
-                    mGenreRef = mDatabaseReference
-                            .child(Const.ContentsPATH)
-                            .child(mQuestion.getGenre())    // mQuestionArrayList.get(position).getGenre()
-                            .child(mQuestion.getQuestionUid());
+                    Intent intent = new Intent(getApplicationContext(), FavoriteActivity.class);
+                    intent.putExtra("GENRE", mGenre);
+                    startActivity(intent);
 
-
-                    mGenreRef = mDatabaseReference
-                            .child(Const.ContentsPATH)
-                            .child(mQuestionArrayList.get(position).getGenre())
-                            .child(mQuestionArrayList.get(position).getQuestionUid());
-*/
-                    /*
-                    mGenreRef = mDatabaseReference
-                            .child(Const.ContentsPATH)
-                            .child(String.valueOf(mDatabaseReference.child(Const.FavoritePATH).child(user.getUid()).child(質問ID).child(ジャンル)))
-                            .child(String.valueOf(mDatabaseReference.child(Const.FavoritePATH).child(user.getUid()).child(質問ID)));
-                    */
-                    //mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(1));
+                    //for(int i=0; i < 4; i++){
+                     //   DatabaseReference mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(i+1);
+                    //    mGenreRef.addChildEventListener(mContentsListener);
+                    //}
 
                     // FloatingButton非表示
-                    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-                    fab.setVisibility(View.INVISIBLE);
+                    // FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                    // fab.setVisibility(View.INVISIBLE);
                 }
                 // その他ジャンル表示時
                 else {
                     mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+                    mGenreRef.addChildEventListener(mEventListener);
 
                     // FloatingButton表示
                     FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
                     fab.setVisibility(View.VISIBLE);
                 }
 
-                mGenreRef.addChildEventListener(mEventListener);
+                //mGenreRef.addChildEventListener(mEventListener);
                 return true;
             }
         });
@@ -302,6 +326,75 @@ public class MainActivity extends AppCompatActivity{
             }
         });
     }
+
+    // 追加　お気に入り用のリスナー
+    private ChildEventListener mFavoriteListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+            // Mapを用意して、
+            HashMap fMap = (HashMap) dataSnapshot.getValue();
+            String genre = (String) fMap.get("genre");
+
+            // dataSnapshot.getKey(): そのキーのID(= Qid)が入る
+            ///favoriteMap.put(dataSnapshot.getKey(), genre);
+
+
+            // mFavoriteListにaddしていく
+            mFavoriteArrayList.add(dataSnapshot.getKey()); // Qidを入れていく。
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+        }
+    };
+
+    // 追加
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // ログイン済みのユーザーを取得する
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // ログインしていなけれお気に入りを非表示に
+        if (user == null) {
+            mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+            mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(false);
+        }
+
+        // ログイン時はお気に入りを表示し、FavoriteActivityにインテントを投げる
+        else {
+
+            mFavoriteArrayList.clear(); // 同じものをaddしないようにclear
+
+            // favorite > UserID の中のイベントリスナーを呼び出し
+            mFavRef = mDatabaseReference.child(Const.FavoritePATH).child(user.getUid());
+            mFavRef.addChildEventListener(mFavoriteListener);
+
+            /*
+            * FavoriteQidMapを作る
+            * mFavoriteListenerを用意、その中でQidMapを作る。onChildAddの中は現87~98行目あたりの処理を入れる。
+            * AddChildEvent
+            * */
+
+            mNavigationView = (NavigationView) findViewById(R.id.nav_view);
+            mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(true);
+        }
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -48,6 +48,7 @@ public class Question implements Serializable {
         return mAnswerArrayList;
     }
 
+    // これ がcontentsの中身を作っている
     public Question(String title, String body, String name, String uid, String questionUid, int genre, byte[] bytes, ArrayList<Answer> answers) {
         mTitle = title;
         mBody = body;
