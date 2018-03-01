@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -28,9 +29,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -81,7 +84,7 @@ public class MainActivity extends AppCompatActivity{
                     answerArrayList.add(answer);
                 }
             }
-
+/*
             // 追加
             // お気に入り選択時
             if(favoFlag == true) {
@@ -99,7 +102,10 @@ public class MainActivity extends AppCompatActivity{
                 Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
                 mQuestionArrayList.add(question);       // リストに追加
             }
+            */
 
+            Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
+            mQuestionArrayList.add(question);       // リストに追加
             mAdapter.notifyDataSetChanged();        // 表示
 
             // ここの処理をmFavoriteListnerのonChildAddの中に書く。他のonhildChangedなどは空欄
@@ -169,7 +175,7 @@ public class MainActivity extends AppCompatActivity{
 
         // 追加　お気に入りリスト用
         mFavoriteArrayList = new ArrayList<String>();
-
+        favoriteMap = new HashMap<String, String>();
         // 追加 ---
         // ログイン済みのユーザーを取得する
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -335,6 +341,7 @@ public class MainActivity extends AppCompatActivity{
             // Mapを用意して、
             HashMap fMap = (HashMap) dataSnapshot.getValue();
             String genre = (String) fMap.get("genre");
+            favoriteMap.put(dataSnapshot.getKey(), genre);
 
             // dataSnapshot.getKey(): そのキーのID(= Qid)が入る
             ///favoriteMap.put(dataSnapshot.getKey(), genre);
@@ -342,6 +349,7 @@ public class MainActivity extends AppCompatActivity{
 
             // mFavoriteListにaddしていく
             mFavoriteArrayList.add(dataSnapshot.getKey()); // Qidを入れていく。
+
         }
 
         @Override
@@ -371,6 +379,7 @@ public class MainActivity extends AppCompatActivity{
 
         // ログインしていなけれお気に入りを非表示に
         if (user == null) {
+            favoriteMap.clear();
             mNavigationView = (NavigationView) findViewById(R.id.nav_view);
             mNavigationView.getMenu().findItem(R.id.nav_favorite).setVisible(false);
         }
@@ -387,7 +396,7 @@ public class MainActivity extends AppCompatActivity{
             /*
             * FavoriteQidMapを作る
             * mFavoriteListenerを用意、その中でQidMapを作る。onChildAddの中は現87~98行目あたりの処理を入れる。
-            * AddChildEvent
+            * AddChildEvent 
             * */
 
             mNavigationView = (NavigationView) findViewById(R.id.nav_view);

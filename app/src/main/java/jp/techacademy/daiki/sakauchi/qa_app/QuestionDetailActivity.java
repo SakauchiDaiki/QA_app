@@ -221,7 +221,7 @@ public class QuestionDetailActivity extends AppCompatActivity implements OnClick
                 fMap.put("genre", genre);
                 favoRef.setValue(fMap);
 */
-                //favoriteMap.put(mQuestion.getQuestionUid(), String.valueOf(mQuestion.getGenre()));
+                favoriteMap.put(mQuestion.getQuestionUid(), String.valueOf(mQuestion.getGenre()));
 
             }
             // すでにお気に入りの時
@@ -237,7 +237,7 @@ public class QuestionDetailActivity extends AppCompatActivity implements OnClick
                 favoriteButton.setImageResource(R.drawable.not_favorite);
                 favoriteFlag = !favoriteFlag;
 
-                //favoriteMap.remove(mQuestion.getQuestionUid());
+                favoriteMap.remove(mQuestion.getQuestionUid());
 
             }
        // }

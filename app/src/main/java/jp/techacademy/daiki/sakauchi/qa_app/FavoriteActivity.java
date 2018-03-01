@@ -39,13 +39,13 @@ public class FavoriteActivity extends AppCompatActivity {
     public HashMap mFavoriteQidMap;
 
     private Toolbar mToolbar;
-    //private int mGenre = 0;
+    private int mGenre = 0;
     private boolean favoFlag = false;
 
     // 追加
     NavigationView mNavigationView;
     Intent iGetGenre;
-    int genre = 0;
+    //int genre = 0;
 
     // --- ここから ---
     DatabaseReference mDatabaseReference;
@@ -62,7 +62,7 @@ public class FavoriteActivity extends AppCompatActivity {
             HashMap map = (HashMap) dataSnapshot.getValue();
 
             // 追加　もしfavoriteMapに質問が含まれていれば
-           // if(favoriteMap.containsKey(dataSnapshot.getKey())) {
+            if(favoriteMap.containsKey(dataSnapshot.getKey())) {
 
                 String title = (String) map.get("title");
                 String body = (String) map.get("body");
@@ -90,7 +90,7 @@ public class FavoriteActivity extends AppCompatActivity {
                 }
 
                 // 追記　mGenre に質問の本来のジャンルを入れる必要あり
-                //int genre = Integer.parseInt(favoriteMap.get(dataSnapshot.getKey()));
+                int genre = Integer.parseInt(favoriteMap.get(dataSnapshot.getKey()));
 
             // 追加
             // お気に入り選択時
@@ -98,19 +98,22 @@ public class FavoriteActivity extends AppCompatActivity {
            // HashMap favGenre = (HashMap) dataSnapshot.getValue();
             //int genre = (int) favGenre.get("genre");
 
-                String work = dataSnapshot.getKey();
+              /*  String work = dataSnapshot.getKey();
                 for(int i = 0; i< mFavoriteArrayList.size(); i++){
                     // 今の質問がお気に入りに含まれていたら、お気に入り一覧に追加
                     if(work.equals(mFavoriteArrayList.get(i))){
-                        // これ渡してもしょうがない（選んだナビゲーションバーの種類）
+                */        // これ渡してもしょうがない（選んだナビゲーションバーの種類）
                         //iGetGenre = getIntent();
                         //genre = iGetGenre.getIntExtra("GENRE", genre);
 
+
+                        // mGenreを変えてやる必要あり！！！
+
                         Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), genre, bytes, answerArrayList);
                         mQuestionArrayList.add(question);
-                    }
+             /*       }
                 }
-            //}
+            }*/
             // お気に入り選択されていなければ、全て表示
            // else {
             //    Question question = new Question(title, body, name, uid, dataSnapshot.getKey(), mGenre, bytes, answerArrayList);
@@ -120,7 +123,7 @@ public class FavoriteActivity extends AppCompatActivity {
 
                 mAdapter.notifyDataSetChanged();
             }
-       // }
+        }
 
 
         @Override
